@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學習證書</title>
+<style>
+  body {
+    font-family: "微軟正黑體";
+    margin: 0;
+    padding: 0;
+    background: #f0f4f8;
+  }
+
+  .container {
+    width: 90%;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 50px 40px;
+    background: #fff;
+    border: 8px solid #4caf50; /* 綠色框線 */
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  }
+
+  h1 {
+    color: #4caf50;
+    font-size: 36px;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    margin: 20px 0;
+    font-size: 24px;
+  }
+
+  input[type="text"] {
+    font-size: 20px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #4caf50;
+    margin-top: 20px;
+    width: 60%;
+    text-align: center;
+  }
+
+  button {
+    font-size: 20px;
+    padding: 10px 20px;
+    margin-top: 30px;
+    border: none;
+    border-radius: 10px;
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #2e7d32;
+  }
+
+  /* 列印樣式 */
+  @media print {
+    body {
+      background: none;
+    }
+    input, button {
+      display: none;
+    }
+    .container {
+      border: 8px solid #4caf50;
+      box-shadow: none;
+      margin: 0;
+      width: 100%;
+      padding: 50px 40px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>SDGs 性別平權小達人</h1>
+  <h2>恭喜你完成學習！</h2>
+  <div>
+    <label for="name">請輸入你的姓名：</label><br>
+    <input type="text" id="name" placeholder="輸入姓名">
+  </div>
+  <h2 id="displayName" style="margin-top:40px;"></h2>
+  <button onclick="printCertificate()">下載證書</button>
+</div>
+
+<script>
+  const nameInput = document.getElementById('name');
+  const displayName = document.getElementById('displayName');
+
+  // 即時顯示姓名
+  nameInput.addEventListener('input', () => {
+    displayName.textContent = nameInput.value ? nameInput.value : '';
+  });
+
+  function printCertificate() {
+    if(!nameInput.value){
+      alert("請先輸入姓名！");
+      return;
+    }
+    window.print();
+  }
+</script>
+
+</body>
+</html>

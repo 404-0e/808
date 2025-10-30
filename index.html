@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SDGs 性別平權</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", sans-serif;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80') no-repeat center center/cover;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 2px 2px 5px black;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      color: white;
+      font-size: 20px;
+      text-shadow: 1px 1px 4px black;
+    }
+
+    .village {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hut {
+      width: 100px;
+      height: 100px;
+      background: url('https://cdn-icons-png.flaticon.com/512/822/822176.png') no-repeat center/contain;
+      position: absolute;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .hut:hover {
+      transform: scale(1.1);
+    }
+
+    #questionBox {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      width: 350px;
+      display: none;
+      text-align: center;
+    }
+
+    #resultBox {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      width: 400px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #ff7f50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #ff6330;
+    }
+
+  </style>
+</head>
+<body>
+  <header>SDGs 性別平權</header>
+  <div id="score">答對：0 / 10</div>
+
+  <div class="village" id="village">
+    <!-- 隨機分布茅草屋 -->
+  </div>
+
+  <div id="questionBox">
+    <h3 id="questionText"></h3>
+    <div id="options"></div>
+  </div>
+
+  <div id="resultBox">
+    <h2 id="resultText"></h2>
+    <button id="retryBtn" style="display:none;">重新挑戰</button>
+    <button id="nextBtn" style="display:none;">前往下一關</button>
+  </div>
+
+  <script>
+    const village = document.getElementById("village");
+    const questionBox = document.getElementById("questionBox");
+    const questionText = document.getElementById("questionText");
+    const optionsDiv = document.getElementById("options");
+    const scoreText = document.getElementById("score");
+    const resultBox = document.getElementById("resultBox");
+    const resultText = document.getElementById("resultText");
+    const retryBtn = document.getElementById("retryBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const questions = [
+      { q: "性別平權是指什麼？", a: "男女享有平等的機會與權利", options: ["女性優先", "男性主導", "男女享有平等的機會與權利"] },
+      { q: "哪個行業女性比例較少？", a: "科技與工程", options: ["科技與工程", "教育", "護理"] },
+      { q: "下列哪項屬於性別刻板印象？", a: "女生不適合當工程師", options: ["男女皆可當工程師", "女生不適合當工程師", "性別不影響能力"] },
+      { q: "哪個行動有助於性別平權？", a: "鼓勵女性參與領導職位", options: ["只錄用男性", "忽視薪資差距", "鼓勵女性參與領導職位"] },
+      { q: "聯合國SDGs第5項是什麼？", a: "性別平等", options: ["終結貧窮", "性別平等", "氣候行動"] },
+      { q: "哪個選項是不平等的？", a: "相同工作但女性薪資較低", options: ["相同工作薪資相同", "相同工作但女性薪資較低", "依能力給薪"] },
+      { q: "家庭中的性別平權可體現於？", a: "共同分擔家務與照顧", options: ["女性負責家事", "男性不做家事", "共同分擔家務與照顧"] },
+      { q: "教育中性別平權是指？", a: "男生女生都有受教育機會", options: ["女生不必上學", "男生應優先", "男生女生都有受教育機會"] },
+      { q: "支持性別平權的做法？", a: "反對歧視與偏見", options: ["只幫助女性", "反對歧視與偏見", "忽視不公平現象"] },
+      { q: "以下哪個是正確觀念？", a: "每個人都應有平等機會", options: ["女生應該溫柔", "男生應該強壯", "每個人都應有平等機會"] }
+    ];
+
+    let correctCount = 0;
+    let answeredCount = 0;
+
+    // 生成10個茅草屋
+    for (let i = 0; i < 10; i++) {
+      const hut = document.createElement("div");
+      hut.classList.add("hut");
+      hut.style.left = `${Math.random() * 80 + 5}%`;
+      hut.style.top = `${Math.random() * 70 + 20}%`;
+      hut.addEventListener("click", () => openQuestion(i));
+      village.appendChild(hut);
+    }
+
+    function openQuestion(index) {
+      if (questions[index].answered) return; // 已回答過就不再開
+      questionBox.style.display = "block";
+      questionText.textContent = questions[index].q;
+      optionsDiv.innerHTML = "";
+      questions[index].options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(index, opt);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(index, selected) {
+      questions[index].answered = true;
+      questionBox.style.display = "none";
+      if (selected === questions[index].a) {
+        correctCount++;
+      }
+      answeredCount++;
+      scoreText.textContent = `答對：${correctCount} / 10`;
+
+      if (answeredCount === 10) showResult();
+    }
+
+    function showResult() {
+      resultBox.style.display = "block";
+      if (correctCount >= 8) {
+        resultText.textContent = `太棒了！你答對了 ${correctCount} 題，前往下一關挑戰吧！`;
+        nextBtn.style.display = "inline-block";
+      } else {
+        resultText.textContent = `你只答對了 ${correctCount} 題，請再接再厲！`;
+        retryBtn.style.display = "inline-block";
+      }
+    }
+
+    retryBtn.onclick = () => location.reload();
+    nextBtn.onclick = () => location.href = "level2.html";
+  </script>
+</body>
+</html>

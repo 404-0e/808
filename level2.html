@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDGs 性別平權-情境題</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "微軟正黑體";
+    background-image: url('fresh-grass-7461860_1280.jpg'); /* 草地背景 */
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #title { position: absolute; top: 10px; left: 20px; font-size: 26px; color: white; font-weight: bold; text-shadow: 2px 2px 5px #000; }
+  #score { position: absolute; top: 10px; right: 20px; font-size: 20px; color: white; font-weight: bold; text-shadow: 2px 2px 5px #000; }
+
+  .flower { position: absolute; width: 80px; cursor: pointer; transition: transform 0.3s; }
+  .flower:hover { transform: scale(1.1); }
+
+  #game-area { position: relative; width: 100%; height: 100%; }
+
+  .question-container { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.9); border-radius: 15px; padding: 20px; text-align: center; width: 70%; display: none; }
+
+  .drag-boxes { display: flex; justify-content: space-around; margin-top: 20px; }
+  .dropzone { width: 40%; height: 150px; border: 3px dashed #4caf50; border-radius: 15px; background-color: rgba(255,255,255,0.6); font-weight: bold; color: #2e7d32; display: flex; align-items: center; justify-content: center; }
+  .draggable { background: #f1faee; padding: 10px 15px; margin: 10px; border-radius: 8px; display: inline-block; cursor: grab; }
+
+  #result { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); border-radius: 20px; padding: 40px; text-align: center; font-size: 24px; display: none; }
+  #result button { margin-top: 20px; font-size: 18px; padding: 10px 20px; border-radius: 10px; background-color: #4caf50; color: white; border: none; cursor: pointer; }
+  #result button:hover { background-color: #2e7d32; }
+</style>
+</head>
+<body>
+  <div id="title">SDGs 性別平權 - 情境題</div>
+  <div id="score">答對題數：<span id="scoreNum">0</span></div>
+  <div id="game-area"></div>
+  <div id="result"></div>
+
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_22f86ce92d.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const questions = [
+      { items: ["鼓勵女生學程式設計","認為女生不適合當工程師"], correct: ["平等","不平等"] },
+      { items: ["爸爸幫忙照顧小孩","只讓女生洗碗"], correct: ["平等","不平等"] },
+      { items: ["公司男女同工同酬","男性才能升主管"], correct: ["平等","不平等"] },
+      { items: ["讓女生參加足球隊","認為女生不能踢球"], correct: ["平等","不平等"] },
+      { items: ["老師鼓勵男女學生同時發言","只聽男生意見"], correct: ["平等","不平等"] },
+      { items: ["男女同樣機會參加科學比賽","女生不被允許參加"], correct: ["平等","不平等"] },
+      { items: ["男生女生都可選修烹飪課","烹飪只給女生"], correct: ["平等","不平等"] },
+      { items: ["父母支持女生繼續升學","認為女生應早點結婚"], correct: ["平等","不平等"] },
+      { items: ["公司提供育嬰假給男女員工","只有女性員工可休育嬰假"], correct: ["平等","不平等"] }
+    ];
+
+    const gameArea = document.getElementById('game-area');
+    const scoreDisplay = document.getElementById('scoreNum');
+    const resultBox = document.getElementById('result');
+    let score = 0, answered = 0;
+
+    const flowerImg = "https://cdn-icons-png.flaticon.com/512/616/616408.png";
+    questions.forEach((q,i)=>{
+      const flower = document.createElement('img');
+      flower.src = flowerImg;
+      flower.className = 'flower';
+      flower.style.left = Math.random()*80+"%";
+      flower.style.top = (60+Math.random()*30)+"%";
+      flower.onclick = () => showQuestion(i,flower);
+      gameArea.appendChild(flower);
+    });
+
+    function showQuestion(index, flower){
+      flower.style.display = "none";
+      const q = questions[index];
+
+      const container = document.createElement('div');
+      container.className = 'question-container';
+      container.innerHTML = `
+        <h2>請將語句拖進正確的框中</h2>
+        <div>
+          ${q.items.map((item,i)=>`<div class="draggable" draggable="true" data-index="${i}">${item}</div>`).join('')}
+        </div>
+        <div class="drag-boxes">
+          <div class="dropzone" data-zone="平等">性別平等</div>
+          <div class="dropzone" data-zone="不平等">性別不平等</div>
+        </div>
+      `;
+      gameArea.appendChild(container);
+      container.style.display = 'block';
+
+      const draggables = container.querySelectorAll('.draggable');
+      const dropzones = container.querySelectorAll('.dropzone');
+      draggables.forEach(d=>{
+        d.ondragstart = e => e.dataTransfer.setData("text", d.dataset.index);
+      });
+      dropzones.forEach(zone=>{
+        zone.ondragover = e=>e.preventDefault();
+        zone.ondrop = e=>{
+          e.preventDefault();
+          const idx = e.dataTransfer.getData("text");
+          const correctAns = q.correct[idx];
+          if(zone.dataset.zone === correctAns) score++;
+          answered++;
+          scoreDisplay.textContent = score;
+          container.remove();
+          if(answered >= questions.length) showResult();
+        };
+      });
+    }
+
+    function showResult(){
+      let level="";
+      if(score <=3) level="再加油 💪";
+      else if(score<=6) level="進步中 🌱";
+      else level="平權達人 🌟";
+
+      let btn="";
+      if(level==="平權達人 🌟"){
+        btn=`<button onclick="location.href='certificate.html'">下載學習證書</button>`;
+      }else{
+        btn=`<button onclick="location.reload()">再次挑戰</button>`;
+      }
+
+      resultBox.innerHTML = `<h2>你的等級：${level}</h2><p>總答對題數：${score}</p>${btn}`;
+      resultBox.style.display='block';
+    }
+  </script>
+</body>
+</html>
